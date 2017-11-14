@@ -9,6 +9,11 @@ public class LevelLoader : MonoBehaviour
     public Text percentageText;
     public GameObject loadingScreenUiElement;
 
+    void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
+
     public void LoadLevel(string sceneName)
     {
         StartCoroutine(LoadLevelAsync(sceneName));
@@ -25,6 +30,8 @@ public class LevelLoader : MonoBehaviour
 
             yield return null;
         }
+
+        loadingScreenUiElement.SetActive(false);
     }
 
     void UpdateLoadingUi(float percentage)

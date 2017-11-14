@@ -7,4 +7,9 @@ namespace Marbles.Systems.Contracts
         bool IsEntityCompliant(T component);
         bool IsEntityOrParentCompliant(T component);
     }
+
+    public interface IConfiguration
+    {
+
+    }
 }
