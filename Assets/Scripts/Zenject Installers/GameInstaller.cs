@@ -8,6 +8,8 @@ namespace Marbles.Installers
         public override void InstallBindings()
         {
             Container.Bind<LookAtConfiguration>().AsSingle();
+            Container.Bind<ClickableConfiguration>().AsSingle();
+            Container.Bind<LevelLoadingConfiguration>().AsSingle();
 
             Container.Bind(x => x.AllInterfaces())
                 .To(x => x.AllNonAbstractClasses().InNamespace("Marbles.Systems"))

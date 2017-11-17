@@ -1,6 +1,6 @@
 ﻿namespace Marbles.Systems.Contracts
 {
-    interface ILookAtController : ISystem
+    public interface ILookAtController : ISystem, IRefreshable
     {
 
     }

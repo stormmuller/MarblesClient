@@ -1,21 +1,27 @@
 ﻿using Marbles.Components;
 using Marbles.Systems.Contracts;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Marbles.Systems.Configurations
 {
-    public class LookAtConfiguration
+    public class LookAtConfiguration : IConfigurationHandler
     {
-        public List<ISystemConfiguration> configs = new List<ISystemConfiguration>();
+        public readonly ISystemConfiguration Configuration;
 
         public LookAtConfiguration()
         {
-            configs.Add(new SystemConfiguration<House>().Calls(PerformLookAt));
-            configs.Add(new SystemConfiguration<School>().Calls(PerformLookAt));
+            Configuration = new SystemConfiguration()
+                .AddType<House>()
+                .AddType<School>()
+                .Calls(c => PerformLookAt(c.transform));
         }
 
-        private void PerformLookAt(Component lookAt)
+        public void Handle(Component component)
+        {
+            Configuration.Handle(component);
+        }
+
+        private void PerformLookAt(Transform lookAt)
         {
             lookAt.transform.rotation = Quaternion.LookRotation(lookAt.transform.position - Camera.main.transform.position);
         }

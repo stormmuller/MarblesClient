@@ -8,23 +8,25 @@ namespace Marbles.Systems
 {
     public class LookAtController : ILookAtController, ITickable
     {
-        private readonly LookAt[] lookAtsItems;
+        private LookAt[] lookAtsItems;
         private readonly LookAtConfiguration lookAtConfiguration;
 
         public LookAtController(LookAtConfiguration lookAtConfiguration)
         {
-            this.lookAtsItems = Object.FindObjectsOfType<LookAt>();
             this.lookAtConfiguration = lookAtConfiguration;
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            this.lookAtsItems = Object.FindObjectsOfType<LookAt>();
         }
 
         public void Tick()
         {
-            foreach (var config in lookAtConfiguration.configs)
+            foreach (var lookAtItem in lookAtsItems)
             {
-                foreach (var lookAtItem in lookAtsItems)
-                {
-                    config.Handle(lookAtItem);
-                }
+                lookAtConfiguration.Handle(lookAtItem);
             }
         }
     }

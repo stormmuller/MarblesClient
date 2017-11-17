@@ -1,46 +1,73 @@
 ﻿using Marbles.Components;
 using Marbles.Systems.Contracts;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Marbles.Systems
 {
-    public class SystemConfiguration<T> : ISystemConfiguration<T> where T : Component, IComponent
+    public class SystemConfiguration : ISystemConfiguration
     {
-        private Type type;
+        private List<Type> types = new List<Type>();
         private bool lookUpInParent = true;
-        private SystemConfigurationAction action;
+        private SystemConfigurationAction systemConfigurationAction;
 
         public SystemConfiguration()
         {
-            this.type = typeof(T);
+
         }
 
-        public ISystemConfiguration<T> LookUpInInstanceOnly()
+        public ISystemConfiguration AddType<T>()
+        {
+            this.types.Add(typeof(T));
+            return this;
+        }
+
+        public ISystemConfiguration LookUpInInstanceOnly()
         {
             lookUpInParent = false;
             return this;
         }
 
-        public ISystemConfiguration<T> Calls(SystemConfigurationAction action)
+        public ISystemConfiguration Calls(SystemConfigurationAction systemConfigurationAction)
         {
-            this.action = action;
+            this.systemConfigurationAction = systemConfigurationAction;
             return this;
         }
 
         public bool Handle(Component component)
         {
-            if (component.GetComponent<T>() != null)
+            Component matchedComponent;
+            return Handle(component, out matchedComponent);
+        }
+        
+        public bool Handle(Component component, out Component matchedComponent)
+        {
+            foreach (var type in types)
             {
-                action(component);
-                return true;
+                var _matchedComponent = component.GetComponent(type);
+
+                if (_matchedComponent != null)
+                {
+                    matchedComponent = _matchedComponent;
+                    systemConfigurationAction(component);
+                    return true;
+                }
             }
-            else if (lookUpInParent && component.GetComponentInParent<T>() != null)
+
+            foreach (var type in types)
             {
-                action(component);
-                return true;
+                var _matchedComponent = component.GetComponent(type);
+
+                if (lookUpInParent && component.GetComponentInParent(type) != null)
+                {
+                    matchedComponent = _matchedComponent;
+                    systemConfigurationAction(component);
+                    return true;
+                }
             }
-            
+
+            matchedComponent = null;
             return false;
         }
     }
