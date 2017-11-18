@@ -1,6 +1,4 @@
-﻿using System;
-using Marbles.Components;
-using Marbles.Systems.Contracts;
+﻿using Marbles.Systems.Contracts;
 using UnityEngine;
 using UnityEngine.UI;
 using Marbles.Components.Levels;
@@ -13,6 +11,8 @@ namespace Marbles.Systems.Configurations
     public class LevelLoadingConfiguration : IConfigurationHandler, ITickable
     {
         private const string WorldMapSceneName = "World Map";
+        private const string BattleGroundSceneName = "Battle Ground";
+
         private readonly List<ISystemConfiguration> Configurations;
         private readonly ILookAtController lookAtController;
         
@@ -31,7 +31,11 @@ namespace Marbles.Systems.Configurations
             {
                 new SystemConfiguration()
                 .AddType<WorldMapLevel>()
-                .Calls(c => LoadLevel(WorldMapSceneName))
+                .Calls(c => LoadLevel(WorldMapSceneName)),
+
+                new SystemConfiguration()
+                .AddType<BattleGroundLevel>()
+                .Calls(c => LoadLevel(BattleGroundSceneName))
             };
             
             UnityEngine.Object.DontDestroyOnLoad(rootUIObject);

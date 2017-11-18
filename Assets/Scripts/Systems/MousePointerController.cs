@@ -30,7 +30,6 @@ namespace Marbles.Systems
             hoveredObjectsThisFrame.Clear();
 
             CheckForHover(ray);
-            CheckForClick(ray);
             CheckForBlur(hoveredObjectsDelta);
 
             hoveredObjectsDelta.Clear();
@@ -38,19 +37,6 @@ namespace Marbles.Systems
             hoveredObjectsDelta.ExceptWith(hoveredObjectsThisFrame);
             hoveredObjectsPreviousFrame.Clear();
             hoveredObjectsPreviousFrame.AddRange(hoveredObjectsThisFrame);
-        }
-
-        private void CheckForClick(Ray ray)
-        {
-            if (inputManager.LeftMouseButtonPress)
-            {
-                RaycastHit rayHitDetails;
-
-                if (Physics.Raycast(ray, out rayHitDetails))
-                {
-                    // rayHitDetails.transform.GetComponent<Clickable>().OnClick();
-                }
-            }
         }
 
         private void CheckForHover(Ray ray)

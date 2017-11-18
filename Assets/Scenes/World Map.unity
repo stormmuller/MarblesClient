@@ -43,7 +43,7 @@ RenderSettings:
 LightmapSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
-  m_GIWorkflowMode: 0
+  m_GIWorkflowMode: 1
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -1112,9 +1112,11 @@ GameObject:
   - component: {fileID: 1131547150}
   - component: {fileID: 1131547149}
   - component: {fileID: 1131547148}
+  - component: {fileID: 1131547152}
   - component: {fileID: 1131547151}
   - component: {fileID: 1131547153}
-  - component: {fileID: 1131547152}
+  - component: {fileID: 1131547155}
+  - component: {fileID: 1131547154}
   m_Layer: 0
   m_Name: School
   m_TagString: Untagged
@@ -1209,6 +1211,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a6a9cd7233298fb48855d161520c20bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1131547154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1131547147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 697005c85a2b8a24fb2a8123c3580f6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1131547155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1131547147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d6936356c5393847bb02dcac71b1339, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &1188310184 stripped

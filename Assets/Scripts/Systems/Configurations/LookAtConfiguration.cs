@@ -1,24 +1,31 @@
 ﻿using Marbles.Components;
 using Marbles.Systems.Contracts;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Marbles.Systems.Configurations
 {
     public class LookAtConfiguration : IConfigurationHandler
     {
-        public readonly ISystemConfiguration Configuration;
+        public readonly List<ISystemConfiguration> Configurations;
 
         public LookAtConfiguration()
         {
-            Configuration = new SystemConfiguration()
+            Configurations = new List<ISystemConfiguration>()
+            {
+                new SystemConfiguration()
                 .AddType<House>()
+                .Calls(c => PerformLookAt(c.transform)),
+
+                new SystemConfiguration()
                 .AddType<School>()
-                .Calls(c => PerformLookAt(c.transform));
+                .Calls(c => PerformLookAt(c.transform))
+            };
         }
 
         public void Handle(Component component)
         {
-            Configuration.Handle(component);
+            Configurations.ForEach(config => config.Handle(component));
         }
 
         private void PerformLookAt(Transform lookAt)

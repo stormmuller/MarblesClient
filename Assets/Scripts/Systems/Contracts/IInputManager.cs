@@ -4,7 +4,8 @@ namespace Marbles.Systems.Contracts
 {
     public interface IInputManager : ISystem
     {
-        bool LeftMouseButtonPress { get; }
+        bool LeftMouseButtonDown { get; }
+        bool LeftMouseButtonUp { get; }
         Vector3 MousePosition { get; }
     }
 }

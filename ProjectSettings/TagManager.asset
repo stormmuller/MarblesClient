@@ -6,6 +6,7 @@ TagManager:
   tags:
   - asteroid
   - ship
+  - Fire
   layers:
   - Default
   - TransparentFX
@@ -17,8 +18,8 @@ TagManager:
   - 
   - Terrain
   - Unlit
-  - 
-  - 
+  - NoProjector
+  - Battle Ground Plane
   - 
   - 
   - 

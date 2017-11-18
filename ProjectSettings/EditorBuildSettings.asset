@@ -11,3 +11,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/World Map.unity
     guid: 33eabefb53b4e814ab861351459fe54a
+  - enabled: 1
+    path: Assets/Scenes/Battle Ground.unity
+    guid: 00000000000000000000000000000000

@@ -37,7 +37,12 @@ namespace Marbles.Systems.HoverableConfiguration
 
         public bool IsEntityCompliant(Hoverable component)
         {
-            return component.GetComponent<School>() != null;
+            if (component != null)
+            {
+                return component.GetComponent<School>() != null;
+            }
+
+            return false;
         }
 
         public bool IsEntityOrParentCompliant(Hoverable component)

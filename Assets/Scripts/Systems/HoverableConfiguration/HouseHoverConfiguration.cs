@@ -41,7 +41,12 @@ namespace Marbles.Systems.HoverableConfiguration
 
         public bool IsEntityCompliant(Hoverable component)
         {
-            return component.GetComponent<House>() != null;
+            if (component != null)
+            {
+                return component.GetComponent<House>() != null;
+            }
+
+            return false;
         }
 
         public bool IsEntityOrParentCompliant(Hoverable component)

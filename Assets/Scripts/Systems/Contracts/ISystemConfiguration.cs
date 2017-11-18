@@ -10,7 +10,6 @@ namespace Marbles.Systems.Contracts
         ISystemConfiguration Calls(SystemConfigurationAction action);
         ISystemConfiguration AddType<T>();
         bool Handle(Component component);
-        bool Handle(Component component, out Component matchedComponent);
     }
 
     public delegate void SystemConfigurationAction(Component component);

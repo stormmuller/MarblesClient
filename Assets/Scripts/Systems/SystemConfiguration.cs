@@ -1,4 +1,4 @@
-﻿using Marbles.Components;
+﻿using Marbles.ExtentionMethods;
 using Marbles.Systems.Contracts;
 using System;
 using System.Collections.Generic;
@@ -8,18 +8,13 @@ namespace Marbles.Systems
 {
     public class SystemConfiguration : ISystemConfiguration
     {
-        private List<Type> types = new List<Type>();
+        private List<Type> neededComponentTypes = new List<Type>();
         private bool lookUpInParent = true;
         private SystemConfigurationAction systemConfigurationAction;
 
-        public SystemConfiguration()
-        {
-
-        }
-
         public ISystemConfiguration AddType<T>()
         {
-            this.types.Add(typeof(T));
+            this.neededComponentTypes.Add(typeof(T));
             return this;
         }
 
@@ -34,41 +29,45 @@ namespace Marbles.Systems
             this.systemConfigurationAction = systemConfigurationAction;
             return this;
         }
-
+        
         public bool Handle(Component component)
         {
-            Component matchedComponent;
-            return Handle(component, out matchedComponent);
-        }
-        
-        public bool Handle(Component component, out Component matchedComponent)
-        {
-            foreach (var type in types)
-            {
-                var _matchedComponent = component.GetComponent(type);
+            var componentTypesFound = new Dictionary<Type, bool>();
 
-                if (_matchedComponent != null)
+            // Add all components into the dictionary and mark them as not found(false).
+            neededComponentTypes.ForEach(t => componentTypesFound.Add(t, false));
+
+            foreach (var neededComponentType in neededComponentTypes)
+            {
+                var matchedComponent = component.GetComponent(neededComponentType);
+
+                if (matchedComponent != null)
                 {
-                    matchedComponent = _matchedComponent;
-                    systemConfigurationAction(component);
-                    return true;
+                    componentTypesFound[neededComponentType] = true;
                 }
             }
 
-            foreach (var type in types)
+            if (!componentTypesFound.AllValuesEqualTo(true))
             {
-                var _matchedComponent = component.GetComponent(type);
-
-                if (lookUpInParent && component.GetComponentInParent(type) != null)
+                foreach (var type in neededComponentTypes)
                 {
-                    matchedComponent = _matchedComponent;
-                    systemConfigurationAction(component);
-                    return true;
+                    var matchedComponent = component.GetComponentInParent(type);
+
+                    if (matchedComponent != null)
+                    {
+                        componentTypesFound[type] = true;
+                    }
                 }
             }
 
-            matchedComponent = null;
-            return false;
+            var isCompliant = componentTypesFound.AllValuesEqualTo(true);
+
+            if (isCompliant)
+            {
+                systemConfigurationAction(component);
+            }
+
+            return isCompliant;
         }
     }
 }
