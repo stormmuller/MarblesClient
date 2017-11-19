@@ -57,9 +57,7 @@ Shader "Custom/Marbles/ClearPainted" {
 		float3 normal : NORMAL;
 
 		// Generated normal map textures
-		float3 tangenttex : TEXTCOORD4;
-		float3 bitangenttex : TEXTCOORD5;
-		float3 normaltex : TEXTCOORD6;
+		float3 normaltex : TEXTCOORD4;
 
 		UNITY_FOG_COORDS(3)
 	};
@@ -94,8 +92,6 @@ Shader "Custom/Marbles/ClearPainted" {
 				o.normal = UnityObjectToClipPos(v.vertex);
 
 				o.normaltex = UnityObjectToWorldNormal(v.normal);
-				o.tangenttex = UnityObjectToWorldNormal(v.tangent);
-				o.bitangenttex = cross(o.tangenttex, o.normaltex);
 
 				return o;
 			}
