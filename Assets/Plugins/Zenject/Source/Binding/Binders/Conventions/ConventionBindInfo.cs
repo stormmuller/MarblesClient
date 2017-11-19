@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace Zenject
 {
@@ -57,10 +58,12 @@ namespace Zenject
 
         public List<Type> ResolveTypes()
         {
-            return GetAllAssemblies()
+            var types = GetAllAssemblies()
                 .Where(ShouldIncludeAssembly)
                 .SelectMany(assembly => GetTypes(assembly))
                 .Where(ShouldIncludeType).ToList();
+
+            return types;
         }
     }
 }

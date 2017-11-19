@@ -1,10 +1,6 @@
 ﻿using Marbles.Components.Levels;
 using Marbles.Systems.Configurations;
 using Marbles.Systems.Contracts;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using Zenject;
 
 namespace Marbles.Systems
 {
@@ -12,14 +8,23 @@ namespace Marbles.Systems
     {
         private readonly LevelLoadingConfiguration levelLoadingConfiguration;
 
-        public LevelLoader(LevelLoadingConfiguration levelLoadingConfiguration)
+        private Level currentLevel;
+
+        public LevelLoader(LevelLoadingConfiguration levelLoadingConfiguration, Level startingLevel)
         {
             this.levelLoadingConfiguration = levelLoadingConfiguration;
+            currentLevel = startingLevel;
         }
 
         public void LoadLevel(Level level)
         {
+            currentLevel = level;
             levelLoadingConfiguration.Handle(level);
+        }
+
+        public Level GetCurrentLevel()
+        {
+            return currentLevel;
         }
     }
 }

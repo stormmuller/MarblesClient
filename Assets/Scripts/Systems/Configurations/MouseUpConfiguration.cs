@@ -8,7 +8,7 @@ using System;
 namespace Marbles.Systems.Configurations
 {
     public class MouseUpConfiguration : IConfigurationHandler
-    { 
+    {
         private readonly List<ISystemConfiguration> Configurations;
         private readonly IMarbleMechanicsController marbleMechanicsController;
 

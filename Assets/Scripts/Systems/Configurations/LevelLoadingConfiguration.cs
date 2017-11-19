@@ -5,6 +5,7 @@ using Marbles.Components.Levels;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using Zenject;
+using System;
 
 namespace Marbles.Systems.Configurations
 {
@@ -15,17 +16,22 @@ namespace Marbles.Systems.Configurations
 
         private readonly List<ISystemConfiguration> Configurations;
         private readonly ILookAtController lookAtController;
+        private readonly ICameraController cameraController;
+        private readonly IPlayerSystem playerSystem;
         
         private Slider loadingBar;
         private Text percentageText;
         private GameObject rootUIObject;
         private AsyncOperation levelLoadingOperation;
+        private string sceneCurrentlyLoading;
 
         public LevelLoadingConfiguration(
               GameObject rootUIObject
             , Slider loadingBar
             , Text percentageText
-            , ILookAtController lookAtController)
+            , ILookAtController lookAtController
+            , ICameraController cameraController
+            , IPlayerSystem playerSystem)
         {
             Configurations = new List<ISystemConfiguration>
             {
@@ -45,6 +51,8 @@ namespace Marbles.Systems.Configurations
             this.percentageText = percentageText;
 
             this.lookAtController = lookAtController;
+            this.cameraController = cameraController;
+            this.playerSystem = playerSystem;
         }
 
         public void Handle(Component component)
@@ -57,8 +65,19 @@ namespace Marbles.Systems.Configurations
 
         private void LoadLevel(string sceneName)
         {
+            sceneCurrentlyLoading = sceneName;
+
             this.levelLoadingOperation = SceneManager.LoadSceneAsync(sceneName);
             rootUIObject.SetActive(true);
+        }
+
+        private void ResetCamrea(string sceneName)
+        {
+            if (sceneName == BattleGroundSceneName)
+            {
+                cameraController.Target = playerSystem.GetPlayer().transform;
+                cameraController.Refresh();
+            }
         }
 
         public void Tick()
@@ -69,6 +88,9 @@ namespace Marbles.Systems.Configurations
                 {
                     rootUIObject.SetActive(false);
                     lookAtController.Refresh();
+                    ResetCamrea(sceneCurrentlyLoading);
+
+                    sceneCurrentlyLoading = null;
                 }
                 else if (rootUIObject.activeInHierarchy)
                 {

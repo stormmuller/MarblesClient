@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Marbles.Enums;
+using UnityEngine;
 
 namespace Marbles.Systems.Contracts
 {
@@ -6,5 +7,6 @@ namespace Marbles.Systems.Contracts
     {
         void PrepareMarbleForShot(Component component);
         void EndMarbleShot(Component component);
+        MarbleShotStatus MarbleShotStatus { get; }
     }
 }

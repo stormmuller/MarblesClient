@@ -3,6 +3,7 @@ using Marbles.Systems.Contracts;
 using UnityEngine;
 using Marbles.Components.Levels;
 using System.Collections.Generic;
+using Marbles.Enums;
 
 namespace Marbles.Systems.Configurations
 {
