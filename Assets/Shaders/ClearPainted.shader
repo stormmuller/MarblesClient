@@ -54,11 +54,6 @@ Shader "Custom/Marbles/ClearPainted" {
 		float2 uvmain : TEXCOORD2;
 		float2 uvPaint : TEXCOORD3;
 		float4 rimColor : COLOR;
-		float3 normal : NORMAL;
-
-		// Generated normal map textures
-		float3 normaltex : TEXTCOORD4;
-
 		UNITY_FOG_COORDS(3)
 	};
 
@@ -87,11 +82,6 @@ Shader "Custom/Marbles/ClearPainted" {
 				o.rimColor = smoothstep(1 - _RimStrength, 1.0, dotProduct);
 
 				o.rimColor *= _RimColor;
-
-				// normal map stuff
-				o.normal = UnityObjectToClipPos(v.vertex);
-
-				o.normaltex = UnityObjectToWorldNormal(v.normal);
 
 				return o;
 			}
@@ -123,15 +113,7 @@ Shader "Custom/Marbles/ClearPainted" {
 				half4 paint = tex2D(_PaintTex, i.uvPaint);
 				col *= tint;
 
-				half4 tangentNormal = tex2D(_BumpMap, i.uvbump) * 2 - 1;
-				float3 surfaceNormal = i.normaltex;
-				float3 worldNormal = tangentNormal.z * surfaceNormal;
-
-				half4 lightingColor = dot(worldNormal * _PaintBumpAmt, _WorldSpaceLightPos0);
-
-				lightingColor += paint;
-
-				col = lerp(col.rgba, lightingColor.rgba, paint.a);
+				col = lerp(col.rgba, paint.rgba, paint.a);
 				col = lerp(col.rgba, i.rimColor.rgba, i.rimColor.a);
 
 				UNITY_APPLY_FOG(i.fogCoord, col);
