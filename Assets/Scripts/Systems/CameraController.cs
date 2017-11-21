@@ -1,4 +1,5 @@
-﻿using Marbles.Systems.Contracts;
+﻿using System;
+using Marbles.Systems.Contracts;
 using UnityEngine;
 using Zenject;
 
@@ -9,11 +10,14 @@ namespace Marbles.Systems
         private const float ZoomSpeed = 0.1f;
 
         public Camera Camera { get { return Camera.main; } }
-        public float ZoomAmount { get; set; }
 
         private Vector3 PositionalOffset { get; set; }
         private Transform target;
         private float StartingZoomAmount;
+        private float zoomAmount;
+
+        float nextZoomReset;
+        bool needsReset;
 
 
         public Transform Target
@@ -29,6 +33,16 @@ namespace Marbles.Systems
         public void Tick()
         {
             FollowTarget();
+            HandleZoomReset();
+        }
+
+        private void HandleZoomReset()
+        {
+            if (needsReset && Time.time > nextZoomReset)
+            {
+                zoomAmount = 0f;
+                needsReset = false;
+            }
         }
 
         private void FollowTarget()
@@ -40,7 +54,7 @@ namespace Marbles.Systems
 
                 position.x = offsetPosition.x;
                 position.z = offsetPosition.z;
-                position.y = Mathf.Lerp(position.y, StartingZoomAmount - ZoomAmount, ZoomSpeed);
+                position.y = Mathf.Lerp(position.y, StartingZoomAmount - zoomAmount, ZoomSpeed);
 
                 Camera.transform.position = position;
             }
@@ -50,12 +64,24 @@ namespace Marbles.Systems
         {
             Refresh();
 
-            ZoomAmount = 0f;
+            zoomAmount = 0f;
         }
 
         public void Refresh()
         {
             StartingZoomAmount = Camera.transform.position.y;
+        }
+
+        public void Zoom(float amount)
+        {
+            zoomAmount = amount;
+        }
+
+        public void Zoom(float amount, float duration)
+        {
+            Zoom(amount);
+            needsReset = true;
+            nextZoomReset = Time.time + duration;
         }
     }
 }

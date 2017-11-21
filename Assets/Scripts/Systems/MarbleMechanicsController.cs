@@ -4,6 +4,8 @@ using Marbles.Systems.Contracts;
 using UnityEngine;
 using Zenject;
 using Marbles.Components.Levels;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Marbles.Systems
 {
@@ -12,14 +14,17 @@ namespace Marbles.Systems
         public MarbleShotStatus MarbleShotStatus { get; private set; }
         private float IdleVelocityThresholdSqr { get { return IdleVelocityThreshold * IdleVelocityThreshold; } }
         private float MinDistanceForSuspenseSqr { get { return MinDistanceForSuspense * MinDistanceForSuspense; } }
+        private float MinPlayerVelocityForSuspenseSqr { get { return MinPlayerVelocityForSuspense * MinPlayerVelocityForSuspense; } }
 
         private const string PlaneRayCastLayerName = "Battle Ground Plane";
         private const float ScrollSpeed = 0.75f;
-        private const float ShotPower = 10f;
-        private const float IdleVelocityThreshold = 0.1f;
-        private const float CheckForIdleDelay = 1f;
+        private const float ShotPower = 15f;
+        private const float IdleVelocityThreshold = 0.25f;
+        private const float CheckForIdleDelay = 0.5f;
         private const float MinDistanceForSuspense = 0.5f;
         private const float SuspenseTimeScale = 0.05f;
+        private const float MinPlayerVelocityForSuspense = 7f;
+        private const float StopVelocityMultiplier = 0.3f;
 
         private readonly IInputManager inputManager;
         private readonly IPlayerSystem playerSystem;
@@ -67,39 +72,60 @@ namespace Marbles.Systems
 
         private void HandleSuspenseOfEnemyHit(GameObject player)
         {
-            var playerTransform = player.GetComponent<Transform>();
-            var opponents = opponentSystem.GetAllOpponents();
-
-            foreach (var opponent in opponents)
+            if (MarbleShotStatus == MarbleShotStatus.Shooting && 
+                player.GetComponent<Rigidbody>().velocity.sqrMagnitude > MinPlayerVelocityForSuspenseSqr)
             {
-                var opponentTransform = opponent.GetComponent<Transform>();
+                var playerTransform = player.GetComponent<Transform>();
+                var opponents = opponentSystem.GetAllOpponents();
 
-                if ((playerTransform.position - opponentTransform.position).sqrMagnitude < MinDistanceForSuspenseSqr)
+                foreach (var opponent in opponents)
                 {
-                    cameraController.ZoomAmount = 2f;
-                    timeController.SetTimeScale(SuspenseTimeScale);
+                    var opponentTransform = opponent.GetComponent<Transform>();
+
+                    if ((playerTransform.position - opponentTransform.position).sqrMagnitude < MinDistanceForSuspenseSqr)
+                    {
+                        cameraController.Zoom(2f, 0.5f);
+                        timeController.SetTimeScale(SuspenseTimeScale, 0.5f);
+                    }
                 }
             }
         }
 
         private void HandleShotStatusChangeDueToVelocity(GameObject player)
         {
-            if (MarbleShotStatus == MarbleShotStatus.Shooting && 
-                player.GetComponent<Rigidbody>().velocity.sqrMagnitude < IdleVelocityThresholdSqr &&
+            var playerRigidBody = player.GetComponent<Rigidbody>();
+
+            if (MarbleShotStatus == MarbleShotStatus.Shooting &&
+                playerRigidBody.velocity.sqrMagnitude < IdleVelocityThresholdSqr &&
                 Time.time - lastEndShot > CheckForIdleDelay)
             {
-                var opponents = opponentSystem.GetAllOpponents();
-
+                var opponents = opponentSystem.GetAllOpponents().Select(o => o.GetComponent<Rigidbody>());
+                
                 foreach (var opponent in opponents)
                 {
-                    if (opponent.GetComponent<Rigidbody>().velocity.sqrMagnitude > IdleVelocityThresholdSqr)
+                    if (opponent.velocity.sqrMagnitude > IdleVelocityThresholdSqr)
                     {
                         return;
                     }
                 }
-                
+
+                var all = new List<Rigidbody>();
+                all.AddRange(opponents);
+                all.Add(playerRigidBody);
+
+                StopAll(all);
                 MarbleShotStatus = MarbleShotStatus.Idle;
             }
+        }
+
+        private void StopAll(List<Rigidbody> all)
+        {
+            all.ForEach(rb => 
+            {
+                rb.velocity *= StopVelocityMultiplier;
+                rb.angularVelocity *= StopVelocityMultiplier;
+            });
+
         }
 
         public void PrepareMarbleForShot(Component component)
@@ -107,7 +133,7 @@ namespace Marbles.Systems
             if (MarbleShotStatus == MarbleShotStatus.Idle)
             {
                 MarbleShotStatus = MarbleShotStatus.PreparingShot;
-                cameraController.ZoomAmount = -2f;
+                cameraController.Zoom(-2f);
 
                 lineRenderer = component.GetComponent<LineRenderer>();
                 lineRenderer.enabled = true;
@@ -121,13 +147,18 @@ namespace Marbles.Systems
             if (MarbleShotStatus == MarbleShotStatus.PreparingShot)
             {
                 MarbleShotStatus = MarbleShotStatus.Shooting;
-                cameraController.ZoomAmount = 0f;
+                cameraController.Zoom(0f);
 
                 lineRenderer = component.GetComponent<LineRenderer>();
                 lineRenderer.enabled = false;
 
-                var forceToAdd = component.transform.position - lastAimRaycastPoint * ShotPower;
-                component.GetComponent<Rigidbody>().AddForce(forceToAdd);
+                var forceToAdd = (component.transform.position - lastAimRaycastPoint) * ShotPower;
+                forceToAdd.y = 0f;
+
+                var componentRigidbody = component.GetComponent<Rigidbody>();
+
+                componentRigidbody.velocity = Vector3.zero;
+                componentRigidbody.AddForce(forceToAdd);
 
                 lastEndShot = Time.time;
             }

@@ -6,6 +6,7 @@ namespace Marbles.Systems.Contracts
     {
         Camera Camera { get; }
         Transform Target { get; set; }
-        float ZoomAmount { get; set; }
+        void Zoom(float amount);
+        void Zoom(float amount, float duration);
     }
 }
