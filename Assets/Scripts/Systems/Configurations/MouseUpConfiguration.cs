@@ -1,18 +1,17 @@
 ﻿using Marbles.Components;
 using Marbles.Systems.Contracts;
 using UnityEngine;
-using Marbles.Components.Levels;
 using System.Collections.Generic;
-using System;
+using Marbles.Systems.Contracts.MarbleMechanics;
 
 namespace Marbles.Systems.Configurations
 {
     public class MouseUpConfiguration : IConfigurationHandler
     {
         private readonly List<ISystemConfiguration> Configurations;
-        private readonly IMarbleMechanicsController marbleMechanicsController;
+        private readonly IHumanMarbleMechanicsController marbleMechanicsController;
 
-        public MouseUpConfiguration(IMarbleMechanicsController marbleMechanicsController)
+        public MouseUpConfiguration(IHumanMarbleMechanicsController marbleMechanicsController)
         {
             this.marbleMechanicsController = marbleMechanicsController;
 

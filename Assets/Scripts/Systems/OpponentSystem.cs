@@ -7,12 +7,11 @@ namespace Marbles.Systems
 {
     public class OpponentSystem : IOpponentSystem
     {
-        public GameObject[] GetAllOpponents()
+        public GameObject GetOpponent()
         {
-            return Object.
-                FindObjectsOfType<Opponent>()
-                .Select(o => o.gameObject)
-                .ToArray();
+            var opponent = Object.FindObjectOfType<Opponent>();
+
+            return opponent == null ? null : opponent.gameObject;
         }
     }
 }

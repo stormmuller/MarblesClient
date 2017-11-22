@@ -1,63 +1,58 @@
-﻿using System;
-using Marbles.Enums;
+﻿using Marbles.Enums;
 using Marbles.Systems.Contracts;
 using UnityEngine;
 using Zenject;
 using Marbles.Components.Levels;
 using System.Linq;
 using System.Collections.Generic;
+using Marbles.Systems.Contracts.MarbleMechanics;
 
 namespace Marbles.Systems
 {
-    public class MarbleMechanicsController : IMarbleMechanicsController, ITickable
+    public class HumanMarbleMechanicsController : IHumanMarbleMechanicsController
     {
         public MarbleShotStatus MarbleShotStatus { get; private set; }
         private float IdleVelocityThresholdSqr { get { return IdleVelocityThreshold * IdleVelocityThreshold; } }
-        private float MinDistanceForSuspenseSqr { get { return MinDistanceForSuspense * MinDistanceForSuspense; } }
-        private float MinPlayerVelocityForSuspenseSqr { get { return MinPlayerVelocityForSuspense * MinPlayerVelocityForSuspense; } }
 
         private const string PlaneRayCastLayerName = "Battle Ground Plane";
         private const float ScrollSpeed = 0.75f;
         private const float ShotPower = 15f;
         private const float IdleVelocityThreshold = 0.25f;
         private const float CheckForIdleDelay = 0.5f;
-        private const float MinDistanceForSuspense = 0.5f;
-        private const float SuspenseTimeScale = 0.05f;
-        private const float MinPlayerVelocityForSuspense = 7f;
         private const float StopVelocityMultiplier = 0.3f;
 
         private readonly IInputManager inputManager;
         private readonly IPlayerSystem playerSystem;
         private readonly IOpponentSystem opponentSystem;
         private readonly ICameraController cameraController;
-        private readonly ITimeController timeController;
         private readonly ILevelLoader levelLoader;
+        private readonly IBattleManager battleManager;
 
         private LineRenderer lineRenderer;
         private LayerMask layerMask;
         private Vector3 lastAimRaycastPoint;
         private float lastEndShot;
 
-        public MarbleMechanicsController(IInputManager inputManager
+        public HumanMarbleMechanicsController(IInputManager inputManager
             , IPlayerSystem playerSystem
             , IOpponentSystem opponentSystem
             , ICameraController cameraController
-            , ITimeController timeController
-            , ILevelLoader levelLoader)
+            , ILevelLoader levelLoader
+            , IBattleManager battleManager)
         {
             this.inputManager = inputManager;
             this.playerSystem = playerSystem;
             this.opponentSystem = opponentSystem;
             this.cameraController = cameraController;
-            this.timeController = timeController;
             this.levelLoader = levelLoader;
+            this.battleManager = battleManager;
 
             MarbleShotStatus = MarbleShotStatus.Idle;
             layerMask = 1 << LayerMask.NameToLayer(PlaneRayCastLayerName);
 
             lastEndShot = 0f;
         }
-        
+
         public void Tick()
         {
             var player = playerSystem.GetPlayer();
@@ -66,28 +61,6 @@ namespace Marbles.Systems
             {
                 HandleAimingOfShot();
                 HandleShotStatusChangeDueToVelocity(player);
-                HandleSuspenseOfEnemyHit(player);
-            }
-        }
-
-        private void HandleSuspenseOfEnemyHit(GameObject player)
-        {
-            if (MarbleShotStatus == MarbleShotStatus.Shooting && 
-                player.GetComponent<Rigidbody>().velocity.sqrMagnitude > MinPlayerVelocityForSuspenseSqr)
-            {
-                var playerTransform = player.GetComponent<Transform>();
-                var opponents = opponentSystem.GetAllOpponents();
-
-                foreach (var opponent in opponents)
-                {
-                    var opponentTransform = opponent.GetComponent<Transform>();
-
-                    if ((playerTransform.position - opponentTransform.position).sqrMagnitude < MinDistanceForSuspenseSqr)
-                    {
-                        cameraController.Zoom(2f, 0.5f);
-                        timeController.SetTimeScale(SuspenseTimeScale, 0.5f);
-                    }
-                }
             }
         }
 
@@ -99,18 +72,15 @@ namespace Marbles.Systems
                 playerRigidBody.velocity.sqrMagnitude < IdleVelocityThresholdSqr &&
                 Time.time - lastEndShot > CheckForIdleDelay)
             {
-                var opponents = opponentSystem.GetAllOpponents().Select(o => o.GetComponent<Rigidbody>());
-                
-                foreach (var opponent in opponents)
+                var opponent = opponentSystem.GetOpponent().GetComponent<Rigidbody>();
+
+                if (opponent.velocity.sqrMagnitude > IdleVelocityThresholdSqr)
                 {
-                    if (opponent.velocity.sqrMagnitude > IdleVelocityThresholdSqr)
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 var all = new List<Rigidbody>();
-                all.AddRange(opponents);
+                all.Add(opponent);
                 all.Add(playerRigidBody);
 
                 StopAll(all);
@@ -120,7 +90,7 @@ namespace Marbles.Systems
 
         private void StopAll(List<Rigidbody> all)
         {
-            all.ForEach(rb => 
+            all.ForEach(rb =>
             {
                 rb.velocity *= StopVelocityMultiplier;
                 rb.angularVelocity *= StopVelocityMultiplier;
@@ -161,6 +131,7 @@ namespace Marbles.Systems
                 componentRigidbody.AddForce(forceToAdd);
 
                 lastEndShot = Time.time;
+                battleManager.SetTurn(BattleTurn.Opponent);
             }
         }
 
@@ -191,5 +162,16 @@ namespace Marbles.Systems
             currentScrollPos.x = currentScrollPos.x + ScrollSpeed * Time.deltaTime;
             lineRenderer.material.SetTextureOffset("_MainTex", currentScrollPos);
         }
+
+        public void FixedTick()
+        {
+            var player = playerSystem.GetPlayer();
+
+            if (player != null && levelLoader.GetCurrentLevel().GetType() == typeof(BattleGroundLevel))
+            {
+                HandleShotStatusChangeDueToVelocity(player);
+            }
+        }
+
     }
 }

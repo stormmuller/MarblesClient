@@ -4,6 +4,7 @@ using UnityEngine;
 using Marbles.Components.Levels;
 using System.Collections.Generic;
 using Marbles.Enums;
+using Marbles.Systems.Contracts.MarbleMechanics;
 
 namespace Marbles.Systems.Configurations
 {
@@ -11,12 +12,17 @@ namespace Marbles.Systems.Configurations
     { 
         private readonly List<ISystemConfiguration> Configurations;
         private readonly ILevelLoader levelLoader;
-        private readonly IMarbleMechanicsController marbleMechanicsController;
+        private readonly IHumanMarbleMechanicsController marbleMechanicsController;
+        private readonly IBattleManager battleManager;
 
-        public MouseDownConfiguration(ILevelLoader levelLoader, IMarbleMechanicsController marbleMechanicsController)
+        public MouseDownConfiguration(
+            ILevelLoader levelLoader
+            , IHumanMarbleMechanicsController marbleMechanicsController
+            , IBattleManager battleManager)
         {
             this.levelLoader = levelLoader;
             this.marbleMechanicsController = marbleMechanicsController;
+            this.battleManager = battleManager;
 
             this.Configurations = new List<ISystemConfiguration>
             {
@@ -45,7 +51,10 @@ namespace Marbles.Systems.Configurations
 
         private void StartMarbleShot(Component component)
         {
-            marbleMechanicsController.PrepareMarbleForShot(component);
+            if (battleManager.BattleTurn == BattleTurn.Player)
+            {
+                marbleMechanicsController.PrepareMarbleForShot(component);
+            }
         }
     }
 }
